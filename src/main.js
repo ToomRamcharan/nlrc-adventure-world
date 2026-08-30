@@ -50,7 +50,11 @@ const scene = new THREE.Scene();
 scene.matrixWorldAutoUpdate = true;
 
 /* ---- sun direction: low, behind-right, golden hour ---- */
-const SUN_DIR = new THREE.Vector3(0.34, 0.115, 1.0).normalize();
+// Sun elevation is a balance: low = strong golden-hour rake (matches the
+// reference), but too low and shadows stretch far beyond any practical shadow
+// frustum and vanish. 0.30 puts it at ~16 deg - still a long warm rake, but
+// shadows land inside the map.
+const SUN_DIR = new THREE.Vector3(0.34, 0.30, 1.0).normalize();
 
 /* ---- fog ---- */
 scene.fog = new THREE.Fog(PAL.fog, FOG_NEAR, FOG_FAR);
@@ -70,12 +74,12 @@ sun.position.copy(SUN_DIR).multiplyScalar(70);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.near = 1;
-sun.shadow.camera.far = 160;
-sun.shadow.camera.left = -34;
-sun.shadow.camera.right = 34;
-sun.shadow.camera.top = 34;
-sun.shadow.camera.bottom = -34;
-sun.shadow.bias = -0.0009;
+sun.shadow.camera.far = 120;
+sun.shadow.camera.left = -22;
+sun.shadow.camera.right = 22;
+sun.shadow.camera.top = 26;
+sun.shadow.camera.bottom = -18;
+sun.shadow.bias = -0.0004;
 sun.shadow.normalBias = 0.032;
 scene.add(sun);
 const sunTarget = new THREE.Object3D();
@@ -167,7 +171,7 @@ mark('atmosphere');
 
 /* ---- post ---- */
 const post = new PostFX(renderer, window.innerWidth, window.innerHeight, {
-  bloom: 0.52, exposure: 0.90, vignette: 0.50, chroma: 0.50,
+  bloom: 0.58, exposure: 0.86, vignette: 0.52, chroma: 0.50,
   shimmer: 0.6, grain: 0.020, threshold: 0.80, bloomScale: 4,
 });
 
@@ -499,7 +503,7 @@ function tick(now) {
 
   // sun & shadow follow
   sunTarget.position.set(player.x * 0.4, 1.2, player.z + 16);
-  sun.position.copy(SUN_DIR).multiplyScalar(64).add(sunTarget.position);
+  sun.position.copy(SUN_DIR).multiplyScalar(48).add(sunTarget.position);
 
   // backdrop follows
   mesaFar.position.z = player.z;

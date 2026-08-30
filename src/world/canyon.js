@@ -27,17 +27,17 @@ import { CHUNK_LEN } from './constants.js';
 const PROFILE = [
   // u,    radialOffset, height
   [0.00,  0.00,  0.00],   // buried foot
-  [0.08, -0.35,  0.42],   // talus / scree slope meeting the sand
-  [0.18, -0.90,  1.30],
-  [0.30, -0.75,  2.45],   // first bench
-  [0.42, -1.55,  3.85],
-  [0.54, -1.20,  5.40],   // mid ledge (catches the sun)
-  [0.66, -2.10,  7.10],
-  [0.77, -1.75,  8.85],
-  [0.86, -2.60, 10.40],
-  [0.93, -2.20, 11.70],
-  [0.98, -3.00, 12.80],
-  [1.00, -2.40, 13.40],   // rim
+  [0.07, -0.40,  0.55],   // talus / scree slope meeting the sand
+  [0.16, -1.00,  1.75],
+  [0.27, -0.80,  3.40],   // first bench
+  [0.38, -1.75,  5.30],
+  [0.49, -1.30,  7.40],   // mid ledge (catches the sun)
+  [0.60, -2.35,  9.60],
+  [0.71, -1.90, 11.90],
+  [0.81, -2.90, 14.10],
+  [0.89, -2.40, 15.90],
+  [0.96, -3.35, 17.40],
+  [1.00, -2.70, 18.30],   // rim
 ];
 
 export class CanyonWalls {
@@ -73,10 +73,13 @@ export class CanyonWalls {
   halfWidthAt(z) {
     const w = this.nWidth(z * 0.0042);
     const w2 = this.nWidth(z * 0.017 + 40);
-    // 13 .. 27 metres. Wider than a "real" gorge on purpose: it keeps the rim
-    // low in frame so the sunset sky stays visible, which is the single
-    // strongest feature of the reference art.
-    return 13.0 + w * 11.5 + w2 * 2.6;
+    // 8.6 .. 19 metres. Tight enough that the walls genuinely FRAME the shot
+    // (the reference has rock filling both edges of frame) while still leaving
+    // a wide sunset sky band above the rim. An earlier round widened this to
+    // 13-27m to "stop the walls sealing off the sky" - that was a misdiagnosis;
+    // the sky was black because of a clip-plane culling bug in the sky shader,
+    // not because of wall height. Reverted.
+    return 8.6 + w * 8.4 + w2 * 2.2;
   }
 
   _makeLayer(side, layerIdx, mat) {
@@ -92,8 +95,8 @@ export class CanyonWalls {
     // Layer staging: each layer sits further back AND taller, so the skyline
     // reads as receding ridges rather than one solid wall. Because they are
     // pushed back, their extra height still lands below the frame's sky band.
-    const push = layerIdx === 0 ? 0 : layerIdx === 1 ? 13.0 : 34.0;
-    const hScale = layerIdx === 0 ? 1.0 : layerIdx === 1 ? 1.62 : 2.55;
+    const push = layerIdx === 0 ? 0 : layerIdx === 1 ? 11.0 : 30.0;
+    const hScale = layerIdx === 0 ? 1.0 : layerIdx === 1 ? 1.55 : 2.40;
     const nOff = side < 0 ? this.nOffsetL : this.nOffsetR;
     const nH = side < 0 ? this.nHeightL : this.nHeightR;
     const detailAmp = layerIdx === 0 ? 1.0 : layerIdx === 1 ? 1.5 : 2.2;
