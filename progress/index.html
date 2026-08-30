@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desert Canyon — Build Progress</title>
+<style>
+:root{
+  --bg:#140b0a; --panel:#1f1210; --panel2:#2a1815; --line:#4a2a1f;
+  --ink:#ffeede; --dim:#c99e83; --accent:#ff9d3f; --accent2:#f5761c;
+  --ok:#4fd08a; --warn:#ffc94a; --bad:#ff6a5a; --wip:#63b6ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1100px 620px at 78% -12%, rgba(255,140,60,.20), transparent 62%),
+    radial-gradient(760px 460px at 8% 6%, rgba(120,70,180,.16), transparent 60%),
+    var(--bg);
+  color:var(--ink); font:14px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  min-height:100vh; padding:26px 20px 70px;
+}
+.wrap{max-width:1240px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;margin-bottom:22px}
+h1{font-size:31px;font-weight:800;font-style:italic;letter-spacing:-.4px;
+  background:linear-gradient(180deg,#fff,#ffd9a8 55%,#ff9b3d);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:12.5px;letter-spacing:.4px}
+.badge{margin-left:auto;display:flex;gap:9px;flex-wrap:wrap}
+.chip{
+  padding:6px 13px;border-radius:999px;font-size:11.5px;font-weight:700;letter-spacing:.7px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+}
+.chip b{color:var(--accent)}
+.chip.live{border-color:rgba(79,208,138,.55)}
+.chip.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--ok);margin-right:7px;box-shadow:0 0 9px var(--ok);animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+.bar{height:11px;border-radius:999px;background:#2b1a16;overflow:hidden;border:1px solid var(--line);margin:14px 0 26px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#ff7a2f,#ffc94a);
+  box-shadow:0 0 16px rgba(255,150,60,.6);transition:width .6s ease}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(315px,1fr));gap:15px}
+.card{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);border-radius:15px;padding:15px 16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.34);
+}
+.card h3{font-size:13.5px;font-weight:800;letter-spacing:.4px;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.dot.done{background:var(--ok);box-shadow:0 0 9px var(--ok)}
+.dot.wip{background:var(--wip);box-shadow:0 0 9px var(--wip);animation:pulse 1.4s infinite}
+.dot.todo{background:#5b3a2e}
+.dot.blocked{background:var(--bad);box-shadow:0 0 9px var(--bad)}
+.card .meta{font-size:10.5px;color:var(--dim);letter-spacing:.9px;text-transform:uppercase;margin-bottom:9px}
+.card p{font-size:12.5px;color:#e6cdb8;margin-bottom:9px}
+.rounds{display:flex;flex-direction:column;gap:6px}
+.round{font-size:11.5px;display:flex;gap:8px;align-items:flex-start;color:#d9bda6}
+.round i{flex:0 0 auto;font-style:normal;font-weight:800;color:var(--accent);min-width:26px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tag{font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:6px;
+  background:rgba(255,157,63,.13);border:1px solid rgba(255,157,63,.30);color:#ffc08a}
+.tag.crit{background:rgba(255,106,90,.13);border-color:rgba(255,106,90,.33);color:#ff9d90}
+
+h2{font-size:15px;font-weight:800;letter-spacing:.5px;margin:32px 0 13px;
+  padding-bottom:8px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+h2 small{font-size:11px;font-weight:600;color:var(--dim);letter-spacing:.6px}
+
+.gapbox{background:linear-gradient(180deg,rgba(255,106,90,.10),rgba(255,106,90,.03));
+  border:1px solid rgba(255,106,90,.30);border-radius:13px;padding:14px 16px;margin-bottom:15px}
+.gapbox h4{font-size:12.5px;color:#ff9d90;letter-spacing:.5px;margin-bottom:6px}
+.gapbox ol{margin:0;padding-left:20px;font-size:12.5px;color:#e8cbbc}
+.gapbox li{margin-bottom:5px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid rgba(74,42,31,.7)}
+th{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);font-weight:700}
+td.num{font-variant-numeric:tabular-nums;color:#ffd9a8}
+.tbl-wrap{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+  border-radius:14px;overflow:hidden}
+
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px}
+.shot{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#0e0806;position:relative}
+.shot img{width:100%;display:block;aspect-ratio:9/16;object-fit:cover}
+.shot span{position:absolute;left:0;right:0;bottom:0;padding:6px 9px;font-size:10.5px;font-weight:700;
+  letter-spacing:.7px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.86));color:#ffd9a8}
+.shot.missing{display:flex;align-items:center;justify-content:center;aspect-ratio:9/16;color:#6b4a3c;font-size:11px}
+
+footer{margin-top:38px;font-size:11px;color:#8a6350;letter-spacing:.4px;text-align:center}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Desert Canyon — Build Progress</h1>
+      <div class="sub" id="sub">NLRC Street Runner · World 3 · builder ⇄ critic improvement loop</div>
+    </div>
+    <div class="badge" id="badges"></div>
+  </header>
+
+  <div class="bar"><i id="progbar" style="width:0%"></i></div>
+
+  <h2>Biggest remaining gap <small>set by the critic each round</small></h2>
+  <div id="gaps"></div>
+
+  <h2>Work streams <small>each has an independent builder + fresh-context critic</small></h2>
+  <div class="grid" id="grid"></div>
+
+  <h2>Round history <small>every round must beat the previous in blind comparison</small></h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Round</th><th>Focus</th><th>Critic verdict</th><th>Score</th><th>Draw calls</th><th>Tris</th></tr></thead>
+    <tbody id="rounds"></tbody>
+  </table></div>
+
+  <h2>Latest rendered output <small>real headless captures, not mockups</small></h2>
+  <div class="shots" id="shots"></div>
+
+  <footer>Auto-generated from <code>progress/state.json</code> · refreshes every 10s</footer>
+</div>
+
+<script>
+const STATUS_LABEL = {done:'COMPLETE', wip:'IN PROGRESS', todo:'QUEUED', blocked:'BLOCKED'};
+
+async function load(){
+  let d;
+  try { d = await (await fetch('state.json?t='+Date.now())).json(); }
+  catch(e){ document.getElementById('sub').textContent = 'state.json not readable yet…'; return; }
+
+  document.getElementById('sub').textContent =
+    `${d.project} · round ${d.round} · updated ${d.updated}`;
+
+  const done = d.streams.filter(s=>s.status==='done').length;
+  const pct = d.streams.length ? Math.round(100*d.streams.reduce((a,s)=>a+(s.progress||0),0)/d.streams.length) : 0;
+  document.getElementById('progbar').style.width = pct+'%';
+
+  document.getElementById('badges').innerHTML = `
+    <div class="chip live">ROUND <b>${d.round}</b></div>
+    <div class="chip">STREAMS <b>${done}/${d.streams.length}</b> done</div>
+    <div class="chip">OVERALL <b>${pct}%</b></div>
+    ${d.quality_score!=null?`<div class="chip">QUALITY <b>${d.quality_score}/100</b></div>`:''}
+  `;
+
+  document.getElementById('gaps').innerHTML = (d.gaps||[]).map(g=>`
+    <div class="gapbox">
+      <h4>${g.title}</h4>
+      <ol>${g.items.map(i=>`<li>${i}</li>`).join('')}</ol>
+    </div>`).join('') || '<div class="gapbox"><h4>No open critique</h4></div>';
+
+  document.getElementById('grid').innerHTML = d.streams.map(s=>`
+    <div class="card">
+      <h3><span class="dot ${s.status}"></span>${s.name}</h3>
+      <div class="meta">${STATUS_LABEL[s.status]||s.status} · ${s.progress||0}% · ${s.rounds?.length||0} round(s)</div>
+      <p>${s.goal}</p>
+      <div class="rounds">
+        ${(s.rounds||[]).slice(-4).map(r=>`<div class="round"><i>r${r.n}</i><span>${r.note}</span></div>`).join('')}
+      </div>
+      <div class="tags">
+        ${(s.done||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+        ${(s.next||[]).map(t=>`<span class="tag crit">→ ${t}</span>`).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('rounds').innerHTML = (d.history||[]).slice().reverse().map(h=>`
+    <tr>
+      <td class="num">${h.n}</td><td>${h.focus}</td><td>${h.verdict}</td>
+      <td class="num">${h.score??'—'}</td><td class="num">${h.draws??'—'}</td><td class="num">${h.tris??'—'}</td>
+    </tr>`).join('');
+
+  document.getElementById('shots').innerHTML = (d.shots||[]).map(s=>`
+    <div class="shot"><img src="${s.src}" alt="${s.label}" loading="lazy"
+      onerror="this.parentElement.classList.add('missing');this.remove()"><span>${s.label}</span></div>`).join('');
+}
+load();
+setInterval(load, 10000);
+</script>
+</body>
+</html>

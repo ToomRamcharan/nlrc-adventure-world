@@ -1,0 +1,202 @@
+{
+  "project": "NLRC Street Runner — World 3: Desert Canyon",
+  "round": 4,
+  "updated": "round 4 — engine + world systems complete; render pipeline debugged from black screen to lit frame. Colour/composition NOT yet at the quality bar.",
+  "quality_score": 42,
+  "gaps": [
+    {
+      "title": "BIGGEST REMAINING GAP — the frame is washed out and the canyon has no silhouette",
+      "items": [
+        "Sky occupies ~55% of frame as a flat pale cream field. The reference has a clear peach→violet→blue vertical ramp with a readable sun. Fix: the horizon stop is still far too light and the gradient stops are compressed into the bottom 20% of the dome — respace them against the real view angles the camera actually samples (~-5° to +35°), not 0..1 of the hemisphere.",
+        "Canyon walls read as flat pale slabs, not layered terracotta strata. Two causes: (a) fog far=430 still erases the mid/far layers, (b) the near wall is now so low (13.4m) and pushed so far out (13-27m half-width) that it barely enters frame. The wall needs to come back IN to ~8-11m and rise to ~18m so it frames the shot — the earlier 'sky is sealed off' problem was actually the black-sky bug, not wall height. This was a misdiagnosis and must be reverted.",
+        "Distant mesa backdrop cards render as light-grey rectangles with visible straight edges — they read as UI panels, not landforms. Needs a proper silhouette shape + haze tint matched to the fog colour.",
+        "No visible shadows anywhere in the frame, so nothing is grounded. Shadow camera is 68m wide at 2048px = ~3cm/texel, which should work — likely the shadow bias/normalBias is washing them out, or the sun elevation (6.6°) makes them fall outside the shadow frustum.",
+        "Ballast/sleepers read well but the rails have no specular highlight running toward the sun, which is the single strongest 'this is metal rail' cue in the reference."
+      ]
+    },
+    {
+      "title": "VERIFIED FIXED this round (each was a real bug found by inspecting rendered output)",
+      "items": [
+        "Boot 92s → 1.5s: texture generation used per-output-pixel JS fbm. Replaced with low-res lattice noise + native canvas upscale (src/render/noisetex.js).",
+        "Textures 3000+ → 82 unique: prop generators passed random per-instance seeds straight into the texture cache key. Seeds are now folded into 3-4 quantised variants.",
+        "Geometries 3032 → 344: every prop allocated fresh BufferGeometry. Added a quantised shared geometry cache (src/render/geocache.js) with a 0.9+ hit rate.",
+        "BLACK SKY: the sky was an r=4000 sphere behind a far=900 camera. Disabling depthTest does not prevent CLIP-plane culling, so it was discarded entirely. Rewritten as a fullscreen NDC triangle that reconstructs the world view ray from the inverse projection — mathematically infinite, unclippable, one primitive.",
+        "WHOLE IMAGE ~2 STOPS DARK: the scene renders to a linear HalfFloat target and is composited by a raw ShaderMaterial, so three.js never injected its output colour-space conversion. Added an explicit linear→sRGB OETF at the end of the composite pass.",
+        "Page load hung for 90s+: Google Fonts is unreachable in the sandbox and the stylesheet was render-blocking. Made the webfont load non-blocking with a system-font fallback."
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "name": "Render Pipeline Correctness",
+      "goal": "Frame is lit, colour-managed and free of clipping/culling bugs before any art judgement is made.",
+      "status": "done",
+      "progress": 100,
+      "rounds": [
+        { "n": 2, "note": "Captured first real frame: fully black sky, everything ~2 stops dark." },
+        { "n": 3, "note": "Diagnosed sky as clip-plane culling (r=4000 sphere vs far=900). Rewrote as fullscreen ray-reconstruction quad." },
+        { "n": 4, "note": "Diagnosed darkness as missing linear→sRGB encode in the custom composite shader. Fixed. Frame is now correctly exposed." }
+      ],
+      "done": ["sky clipping fixed", "sRGB encode fixed", "font blocking fixed", "verified against real captures"],
+      "next": []
+    },
+    {
+      "name": "Performance & Boot",
+      "goal": "Sub-2s boot, bounded texture/geometry/material counts, adaptive quality.",
+      "status": "done",
+      "progress": 95,
+      "rounds": [
+        { "n": 1, "note": "Boot was 92s — per-pixel JS noise in texture generation." },
+        { "n": 2, "note": "Rewrote noise to low-res lattice + native upscale. Boot 92s → 1.5s." },
+        { "n": 3, "note": "Seed quantisation: 3000+ textures → 82 unique, 533ms total." },
+        { "n": 4, "note": "Shared geometry cache: 3032 geometries → 344, hit rate 0.9+." }
+      ],
+      "done": ["fast noise pipeline", "seed quantisation", "shared geometry cache", "staged boot", "adaptive quality tiers"],
+      "next": ["level-ready is still 19s — chunk generation itself now dominates, needs profiling"]
+    },
+    {
+      "name": "Sky & Golden-Hour Atmosphere",
+      "goal": "Peach→violet→blue ramp, low readable sun, drifting cloud decks, crepuscular rays, horizon haze.",
+      "status": "wip",
+      "progress": 45,
+      "rounds": [
+        { "n": 1, "note": "Shader dome: 5-stop gradient, sun disc + 3 scatter lobes, 3 fbm cloud decks." },
+        { "n": 3, "note": "Rewritten as fullscreen ray-reconstruction quad to escape clip culling." },
+        { "n": 4, "note": "Darkened the horizon/low stops. Still reads as a flat pale field — CRITIC REJECTS." }
+      ],
+      "done": ["gradient ramp", "sun disc + lobes", "fbm cloud decks", "crepuscular streaks", "storm/tunnel blend"],
+      "next": ["respace gradient stops against the ACTUAL sampled view angles", "make the sun disc visible in frame", "clouds are invisible at current exposure"]
+    },
+    {
+      "name": "Canyon Walls & Rock Formations",
+      "goal": "Layered terracotta strata framing the shot, receding ridge silhouettes, hoodoos, arches, mesas.",
+      "status": "wip",
+      "progress": 38,
+      "rounds": [
+        { "n": 1, "note": "Lofted ribbon meshes, 3 depth layers per side, fbm width/height/detail fields." },
+        { "n": 3, "note": "Lowered walls to 13.4m and widened to 13-27m to 'stop sealing off the sky'." },
+        { "n": 4, "note": "MISDIAGNOSIS: the sky was black because of the clip bug, not wall height. Walls are now too low and too far out to frame the shot. Must be reverted. CRITIC REJECTS." }
+      ],
+      "done": ["ribbon loft geometry", "3 depth layers", "strata texture", "hoodoos", "arches"],
+      "next": ["REVERT wall height to ~18m and half-width to 8-11m", "pull fog back so mid/far layers survive", "replace mesa backdrop cards with real silhouettes"]
+    },
+    {
+      "name": "Track, Rails & Ballast",
+      "goal": "Three lanes of believable rail: I-beam profile, instanced jittered sleepers, crushed-stone ballast.",
+      "status": "wip",
+      "progress": 72,
+      "rounds": [
+        { "n": 1, "note": "Extruded I-beam cross-section, instanced sleepers with per-instance colour/rotation jitter, faceted gravel ballast." },
+        { "n": 4, "note": "Reads well in the capture — best-performing element so far. Sleeper spacing and ballast texture are convincing." }
+      ],
+      "done": ["I-beam rail profile", "instanced sleepers", "faceted ballast texture", "tile recycling"],
+      "next": ["specular highlight along the rail heads toward the sun", "ballast-to-sand edge blending"]
+    },
+    {
+      "name": "Trains",
+      "goal": "Subway, freight, diesel loco, flatbed with bogies, livery, headlights, desert weathering.",
+      "status": "wip",
+      "progress": 60,
+      "rounds": [
+        { "n": 1, "note": "4 car types, procedural side/front textures with windows + glass reflections, bogies with rotating wheels, emissive headlights." },
+        { "n": 4, "note": "A blue car flank is visible at frame left and reads correctly, but no full train has been captured head-on yet." }
+      ],
+      "done": ["4 car types", "bogies + wheels", "side/front textures", "headlights", "consist assembly", "geometry cached"],
+      "next": ["capture a train head-on to judge silhouette", "verify headlight bloom at gameplay distance"]
+    },
+    {
+      "name": "Obstacles & Props",
+      "goal": "Full desert prop library + fair, readable obstacles.",
+      "status": "wip",
+      "progress": 62,
+      "rounds": [
+        { "n": 1, "note": "22 generators: saguaro with procedural arms, chevron ramps, CAUTION FALLING ROCKS signage, water tower, windmill, mine headframe, shack." },
+        { "n": 4, "note": "Rebuilt entirely on the shared geometry cache. Lamp posts and telegraph poles read well in frame." }
+      ],
+      "done": ["obstacle set", "cactus family", "signage", "lamp posts", "set pieces", "geometry cached"],
+      "next": ["density tuning per zone", "props need contact shadows to sit on the ground"]
+    },
+    {
+      "name": "Level Design & Zones",
+      "goal": "6 zones with fair obstacle rhythm, guaranteed-passable lanes, coin choreography, tunnels, trestle bridge.",
+      "status": "wip",
+      "progress": 58,
+      "rounds": [
+        { "n": 1, "note": "30m chunks, zone scheduler, lane-safety logic, coin lines/arcs/zigzags, mine tunnel + trestle bridge structures." }
+      ],
+      "done": ["chunk pooling", "zone scheduler", "lane safety", "tunnel", "trestle bridge", "coin patterns"],
+      "next": ["no zone has been visually verified yet — tunnel/bridge/storm captures still needed", "19s generation cost needs profiling"]
+    },
+    {
+      "name": "Player Character",
+      "goal": "Red beanie, blonde pigtails, white tank, blue jeans with red trim, white sneakers, procedural run cycle.",
+      "status": "wip",
+      "progress": 52,
+      "rounds": [
+        { "n": 1, "note": "Primitive rig with 2-segment limbs, run cycle with arm counter-swing, jump/roll poses, pigtail secondary motion, foot dust." },
+        { "n": 4, "note": "Visible in frame and the run cycle is animating, but the overlay card covers the torso in every menu capture — needs a gameplay-state capture to judge." }
+      ],
+      "done": ["rig + costume", "run cycle", "jump/roll", "pigtail motion", "dust puffs"],
+      "next": ["capture in gameplay state without the overlay", "silhouette readability from behind"]
+    },
+    {
+      "name": "Lighting & Post-Processing",
+      "goal": "Golden-hour rig + bloom, ACES, grade, vignette, shimmer, speed blur.",
+      "status": "wip",
+      "progress": 58,
+      "rounds": [
+        { "n": 1, "note": "4-light rig, PMREM env map, 2-level bloom chain, ACES, lift/gamma/gain grade, radial speed blur, heat shimmer." },
+        { "n": 4, "note": "Added the missing sRGB encode. Rebalanced hemi 0.86→0.52 and sun 3.05→3.55 for contrast. Shadows still not visible — unresolved." }
+      ],
+      "done": ["4-light rig", "PMREM env", "2-level bloom", "ACES + grade", "sRGB encode", "shimmer", "speed blur"],
+      "next": ["DEBUG why no shadows appear", "exposure is still too high — highlights are clipping"]
+    },
+    {
+      "name": "Atmosphere FX",
+      "goal": "Dust motes, sand storm, god rays, tunnel embers, pickup bursts.",
+      "status": "wip",
+      "progress": 50,
+      "rounds": [
+        { "n": 1, "note": "950 GPU dust motes with depth fade, 170 sand wisps, 8 additive god-ray planes, 130 tunnel embers, 110-sprite burst pool." }
+      ],
+      "done": ["dust motes", "sand storm", "god rays", "tunnel embers", "bursts"],
+      "next": ["god rays are invisible in the capture — placement vs sun needs verification", "storm state not yet captured"]
+    },
+    {
+      "name": "HUD & UI",
+      "goal": "Reference-matched banner chip, feature rail, score pills, zone toasts, menu cards.",
+      "status": "done",
+      "progress": 88,
+      "rounds": [
+        { "n": 1, "note": "Banner chip + subtitle, 4-item feature rail, glassmorphic pills, animated zone toast, gradient-text overlay cards." },
+        { "n": 4, "note": "Closest match to the reference of any element. Banner chip, subtitle and feature rail all read correctly." }
+      ],
+      "done": ["banner chip", "feature rail", "HUD pills", "zone toast", "menu/gameover cards", "responsive breakpoints"],
+      "next": ["webfont is unavailable in-sandbox so typography falls back — verify on a real network"]
+    },
+    {
+      "name": "Critic Harness",
+      "goal": "Headless capture of scripted game states + console/error/stat collection, so every round is judged on real output.",
+      "status": "done",
+      "progress": 100,
+      "rounds": [
+        { "n": 1, "note": "tools/shoot.py drives 11 states; tools/probe.py measures boot, fps, draw calls, texture/geo/material counts." },
+        { "n": 4, "note": "This harness is what caught all six real bugs. Every fix this round came from inspecting its output, not from reading code." }
+      ],
+      "done": ["11 scripted states", "zone seeking", "error capture", "renderer stats", "boot/fps probe"],
+      "next": []
+    }
+  ],
+  "history": [
+    { "n": 1, "focus": "Engine bring-up: sky, canyon, track, trains, props, levelgen, player, post, HUD", "verdict": "could not even boot — 92s texture generation", "score": 0, "draws": null, "tris": null },
+    { "n": 2, "focus": "Fast noise pipeline; first real capture", "verdict": "REJECT — black sky, whole frame ~2 stops dark", "score": 8, "draws": 1, "tris": 1 },
+    { "n": 3, "focus": "Seed quantisation + shared geometry cache", "verdict": "REJECT — sky still black; found clip-plane culling", "score": 18, "draws": 1, "tris": 344 },
+    { "n": 4, "focus": "Sky rewrite (NDC ray quad) + sRGB encode + lighting rebalance", "verdict": "PARTIAL — frame is now correctly lit and readable, but washed out with no canyon silhouette. Beats round 3 in blind comparison; does NOT beat the reference.", "score": 42, "draws": 1, "tris": 344 }
+  ],
+  "shots": [
+    { "src": "../shots/probe.png", "label": "r2 — black sky, 2 stops dark" },
+    { "src": "../shots/probe2.png", "label": "r3 — geo cache, sky still black" },
+    { "src": "../shots/probe3.png", "label": "r4a — sky renders after quad rewrite" },
+    { "src": "../shots/probe4.png", "label": "r4b — sRGB + lighting rebalance (current)" }
+  ]
+}

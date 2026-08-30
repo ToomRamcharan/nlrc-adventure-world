@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>NLRC Street Runner — 3. Desert Canyon</title>
+<!-- Non-blocking webfont load: never stalls first paint, degrades to system stack -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Bai+Jamjuree:ital,wght@0,600;0,700;1,700;1,800&display=swap">
+<link rel="stylesheet" href="/src/ui/hud.css" />
+</head>
+<body>
+  <canvas id="gl"></canvas>
+
+  <div id="hud">
+    <div class="hud-top">
+      <div class="hud-left">
+        <div class="pill score-pill">
+          <span class="pill-ico">◆</span>
+          <span id="score">0</span>
+        </div>
+        <div class="pill coin-pill">
+          <span class="coin-ico"></span>
+          <span id="coins">0</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div class="dist-wrap">
+          <div class="dist-label">DISTANCE</div>
+          <div class="dist-val"><span id="dist">0</span><small>m</small></div>
+        </div>
+        <button id="btn-pause" class="icon-btn" aria-label="Pause">❚❚</button>
+      </div>
+    </div>
+
+    <div class="banner" id="banner">
+      <div class="banner-chip">3. DESERT CANYON</div>
+      <div class="banner-sub">Hot Sands. Rocky Paths. Extreme Thrills.</div>
+    </div>
+
+    <div class="zone-toast" id="zone-toast"></div>
+
+    <div class="feature-rail" id="feature-rail">
+      <div class="feat"><i class="fi fi-train"></i><span>CANYON TRAINS</span></div>
+      <div class="feat"><i class="fi fi-rock"></i><span>ROCKY OBSTACLES</span></div>
+      <div class="feat"><i class="fi fi-storm"></i><span>SAND STORMS</span></div>
+      <div class="feat"><i class="fi fi-tunnel"></i><span>MINE TUNNELS</span></div>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <div class="ov-card">
+      <div class="ov-kicker">NLRC STREET RUNNER</div>
+      <h1 class="ov-title">DESERT<br><em>CANYON</em></h1>
+      <div class="ov-sub">Hot Sands. Rocky Paths. Extreme Thrills.</div>
+      <button id="btn-play" class="play-btn">TAP TO RUN</button>
+      <div class="ov-hint">
+        <span><b>A</b>/<b>D</b> or <b>←</b>/<b>→</b> switch lane</span>
+        <span><b>W</b>/<b>Space</b> jump &nbsp;·&nbsp; <b>S</b> roll</span>
+        <span>swipe on touch</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameover" class="overlay hidden">
+    <div class="ov-card">
+      <div class="ov-kicker">RUN ENDED</div>
+      <h1 class="ov-title small">CANYON<br><em>CLAIMED YOU</em></h1>
+      <div class="go-stats">
+        <div><span id="go-dist">0</span><small>METRES</small></div>
+        <div><span id="go-coins">0</span><small>COINS</small></div>
+        <div><span id="go-score">0</span><small>SCORE</small></div>
+      </div>
+      <button id="btn-retry" class="play-btn">RUN AGAIN</button>
+    </div>
+  </div>
+
+  <div id="loader" class="loader"><div class="lspin"></div><div class="ltxt">FORGING THE CANYON…</div></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
