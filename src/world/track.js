@@ -76,9 +76,12 @@ export class Track {
     this.matRail = new THREE.MeshStandardMaterial({
       map: railTex,
       color: 0xffffff,
-      roughness: 0.36,
-      metalness: 0.86,
-      envMapIntensity: 1.15,
+      // Polished rail heads are the strongest "this is steel" cue in the
+      // reference: a bright specular line running down the track toward the
+      // sun. Low roughness + high envMapIntensity gives us that streak.
+      roughness: 0.18,
+      metalness: 0.95,
+      envMapIntensity: 2.2,
     });
     this.matRailSide = new THREE.MeshStandardMaterial({
       color: new THREE.Color(PAL.railDark), roughness: 0.62, metalness: 0.7,
